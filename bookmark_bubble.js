@@ -234,6 +234,14 @@ google.bookmarkbubble.Bubble.prototype.MOBILE_SAFARI_USERAGENT_REGEX_ =
 
 
 /**
+ * Regular expression for detecting an iPad.
+ * @type {!RegExp}
+ * @private
+ */
+google.bookmarkbubble.Bubble.prototype.IPAD_USERAGENT_REGEX_ = /iPad/;
+
+
+/**
  * Determines whether the bubble should be shown or not.
  * @return {boolean} Whether the bubble should be shown or not.
  * @private
@@ -254,6 +262,8 @@ google.bookmarkbubble.Bubble.prototype.show_ = function() {
   this.element_ = this.build_();
 
   document.body.appendChild(this.element_);
+  this.element_.style.WebkitTransform =
+      'translateY(' + this.getHiddenYPosition_() + 'px)';
 
   this.setHashParameter();
 
@@ -352,8 +362,19 @@ google.bookmarkbubble.Bubble.prototype.isFullscreen_ = function() {
  * @private
  */
 google.bookmarkbubble.Bubble.prototype.isMobileSafari_ = function() {
-  return this.MOBILE_SAFARI_USERAGENT_REGEX_.test(navigator.userAgent);
+  return this.MOBILE_SAFARI_USERAGENT_REGEX_.test(window.navigator.userAgent);
 };
+
+
+/**
+ * Whether the application is running on an iPad.
+ * @return {boolean} True if the current user agent looks like an iPad.
+ * @private
+ */
+google.bookmarkbubble.Bubble.prototype.isIpad_ = function() {
+  return this.IPAD_USERAGENT_REGEX_.test(window.navigator.userAgent);
+};
+
 
 
 /**
@@ -362,9 +383,8 @@ google.bookmarkbubble.Bubble.prototype.isMobileSafari_ = function() {
  */
 google.bookmarkbubble.Bubble.prototype.setPosition = function() {
   this.element_.style.WebkitTransition = '-webkit-transform 0.7s ease-out';
-  this.element_.style.WebkitTransform = 'translateY(' +
-      (window.pageYOffset + window.innerHeight - this.element_.offsetHeight -
-      17) + 'px)';
+  this.element_.style.WebkitTransform =
+      'translateY(' + this.getVisibleYPosition_() + 'px)';
 };
 
 
@@ -388,9 +408,31 @@ google.bookmarkbubble.Bubble.prototype.autoDestruct_ = function() {
     return;
   }
   this.element_.style.WebkitTransition = '-webkit-transform 0.7s ease-in';
-  this.element_.style.WebkitTransform = 'translateY(' +
-      (window.pageYOffset + window.innerHeight) + 'px)';
+  this.element_.style.WebkitTransform =
+      'translateY(' + this.getHiddenYPosition_() + 'px)';
   window.setTimeout(google.bind(this.destroy, this), 700);
+};
+
+
+/**
+ * Gets the y offset used to show the bubble (i.e., position it on-screen).
+ * @return {number} The y offset.
+ * @private
+ */
+google.bookmarkbubble.Bubble.prototype.getVisibleYPosition_ = function() {
+  return this.isIpad_() ? window.pageYOffset + 17 :
+      window.pageYOffset - this.element_.offsetHeight + window.innerHeight - 17;
+};
+
+
+/**
+ * Gets the y offset used to hide the bubble (i.e., position it off-screen).
+ * @return {number} The y offset.
+ * @private
+ */
+google.bookmarkbubble.Bubble.prototype.getHiddenYPosition_ = function() {
+  return this.isIpad_() ? window.pageYOffset - this.element_.offsetHeight :
+      window.pageYOffset + window.innerHeight;
 };
 
 
@@ -444,18 +486,18 @@ google.bookmarkbubble.Bubble.prototype.getLink = function(rel) {
  */
 google.bookmarkbubble.Bubble.prototype.build_ = function() {
   var bubble = document.createElement('div');
+  var isIpad = this.isIpad_();
+
   bubble.style.position = 'absolute';
   bubble.style.zIndex = 1000;
   bubble.style.width = '100%';
   bubble.style.left = '0';
   bubble.style.top = '0';
-  bubble.style.WebkitTransform = 'translateY(' +
-      (window.pageYOffset + window.innerHeight) + 'px)';
 
   var bubbleInner = document.createElement('div');
   bubbleInner.style.position = 'relative';
   bubbleInner.style.width = '214px';
-  bubbleInner.style.margin = '0 auto';
+  bubbleInner.style.margin = isIpad ? '0 0 0 82px' : '0 auto';
   bubbleInner.style.border = '2px solid #fff';
   bubbleInner.style.padding = '20px 20px 20px 10px';
   bubbleInner.style.WebkitBorderRadius = '8px';
@@ -463,7 +505,9 @@ google.bookmarkbubble.Bubble.prototype.build_ = function() {
   bubbleInner.style.WebkitBackgroundSize = '100% 8px';
   bubbleInner.style.backgroundColor = '#b0c8ec';
   bubbleInner.style.background = '#cddcf3 -webkit-gradient(linear, ' +
-      'left bottom, left top, from(#b3caed), to(#cddcf3)) no-repeat bottom';
+      'left bottom, left top, ' + isIpad ?
+          'from(#cddcf3), to(#b3caed)) no-repeat top' :
+          'from(#b3caed), to(#cddcf3)) no-repeat bottom';
   bubbleInner.style.font = '13px/17px sans-serif';
   bubble.appendChild(bubbleInner);
 
@@ -488,8 +532,13 @@ google.bookmarkbubble.Bubble.prototype.build_ = function() {
   arrow.style.width = '25px';
   arrow.style.height = '19px';
   arrow.style.position = 'absolute';
-  arrow.style.bottom = '-19px';
   arrow.style.left = '111px';
+  if (isIpad) {
+    arrow.style.WebkitTransform = 'rotate(180deg)';
+    arrow.style.top = '-19px';
+  } else {
+    arrow.style.bottom = '-19px';
+  }
   bubbleInner.appendChild(arrow);
 
   var close = document.createElement('a');
