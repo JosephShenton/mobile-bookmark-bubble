@@ -523,6 +523,7 @@ google.bookmarkbubble.Bubble.prototype.build_ = function() {
   icon.style.margin = '-2px 7px 3px 5px';
   icon.style.background =
       '#fff url(' + this.getIconUrl_() + ') no-repeat -1px -1px';
+  icon.style.WebkitBackgroundSize = '57px';
   icon.style.WebkitBorderRadius = '10px';
   icon.style.WebkitBoxShadow = '0 2px 5px rgba(0, 0, 0, 0.4)';
   bubbleInner.insertBefore(icon, bubbleInner.firstChild);
