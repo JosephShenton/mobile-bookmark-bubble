@@ -242,6 +242,15 @@ google.bookmarkbubble.Bubble.prototype.IPAD_USERAGENT_REGEX_ = /iPad/;
 
 
 /**
+ * Regular expression for extracting the iOS version. Only matches 2.0 and up.
+ * @type {!RegExp}
+ * @private
+ */
+google.bookmarkbubble.Bubble.prototype.IOS_VERSION_USERAGENT_REGEX_ =
+    /OS (\d)_(\d)(?:_(\d))?/;
+
+
+/**
  * Determines whether the bubble should be shown or not.
  * @return {boolean} Whether the bubble should be shown or not.
  * @private
@@ -375,6 +384,38 @@ google.bookmarkbubble.Bubble.prototype.isIpad_ = function() {
   return this.IPAD_USERAGENT_REGEX_.test(window.navigator.userAgent);
 };
 
+
+/**
+ * Creates a version number from 4 integer pieces between 0 and 127 (inclusive).
+ * @param {*=} opt_a The major version.
+ * @param {*=} opt_b The minor version.
+ * @param {*=} opt_c The revision number.
+ * @param {*=} opt_d The build number.
+ * @return {number} A representation of the version.
+ * @private
+ */
+google.bookmarkbubble.Bubble.prototype.getVersion_ = function(opt_a, opt_b,
+    opt_c, opt_d) {
+  // We want to allow implicit conversion of any type to number while avoiding
+  // compiler warnings about the type.
+  return /** @type {number} */ (opt_a) << 21 |
+      /** @type {number} */ (opt_b) << 14 |
+      /** @type {number} */ (opt_c) << 7 |
+      /** @type {number} */ (opt_d);
+};
+
+
+/**
+ * Gets the iOS version of the device. Only works for 2.0+.
+ * @return {number} The iOS version.
+ * @private
+ */
+google.bookmarkbubble.Bubble.prototype.getIosVersion_ = function() {
+  var groups = this.IOS_VERSION_USERAGENT_REGEX_.exec(
+      window.navigator.userAgent) || [];
+  groups.shift();
+  return this.getVersion_.apply(this, groups);
+};
 
 
 /**
@@ -511,10 +552,16 @@ google.bookmarkbubble.Bubble.prototype.build_ = function() {
   bubbleInner.style.font = '13px/17px sans-serif';
   bubble.appendChild(bubbleInner);
 
-  // The "Add to Home Screen" text is intended to be the exact same size text
-  // that is displayed in the menu of Mobile Safari on iPhone.
-  bubbleInner.innerHTML = 'Install this web app on your phone: tap ' +
-      '<b style="font-size:15px">+</b> and then <b>\'Add to Home Screen\'</b>';
+  // The "Add to Home Screen" text is intended to be the exact same text
+  // that is displayed in the menu of Mobile Safari.
+  if (this.getIosVersion_() >= this.getVersion_(4, 2)) {
+    bubbleInner.innerHTML = 'Install this web app on your phone: ' +
+        'tap on the arrow and then <b>\'Add to Home Screen\'</b>';
+  } else {
+    bubbleInner.innerHTML = 'Install this web app on your phone: ' +
+        'tap <b style="font-size:15px">+</b> and then ' +
+        '<b>\'Add to Home Screen\'</b>';
+  }
 
   var icon = document.createElement('div');
   icon.style['float'] = 'left';
