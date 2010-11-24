@@ -272,7 +272,7 @@ google.bookmarkbubble.Bubble.prototype.show_ = function() {
 
   document.body.appendChild(this.element_);
   this.element_.style.WebkitTransform =
-      'translateY(' + this.getHiddenYPosition_() + 'px)';
+      'translate3d(0,' + this.getHiddenYPosition_() + 'px,0)';
 
   this.setHashParameter();
 
@@ -425,7 +425,7 @@ google.bookmarkbubble.Bubble.prototype.getIosVersion_ = function() {
 google.bookmarkbubble.Bubble.prototype.setPosition = function() {
   this.element_.style.WebkitTransition = '-webkit-transform 0.7s ease-out';
   this.element_.style.WebkitTransform =
-      'translateY(' + this.getVisibleYPosition_() + 'px)';
+      'translate3d(0,' + this.getVisibleYPosition_() + 'px,0)';
 };
 
 
@@ -450,7 +450,7 @@ google.bookmarkbubble.Bubble.prototype.autoDestruct_ = function() {
   }
   this.element_.style.WebkitTransition = '-webkit-transform 0.7s ease-in';
   this.element_.style.WebkitTransform =
-      'translateY(' + this.getHiddenYPosition_() + 'px)';
+      'translate3d(0,' + this.getHiddenYPosition_() + 'px,0)';
   window.setTimeout(google.bind(this.destroy, this), 700);
 };
 
