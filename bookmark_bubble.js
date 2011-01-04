@@ -144,6 +144,11 @@ google.bookmarkbubble.Bubble.prototype.showIfAllowedWhenLoaded =
  * This gets called automatically when the bubble is shown. The idea is that if
  * the user then creates a bookmark, we can later recognize on application
  * startup whether it was from a bookmark suggested with this bubble.
+ *
+ * NOTE: Using a hash parameter to track whether the bubble has been shown
+ * conflicts with the navigation system in jQuery Mobile. If you are using that
+ * library, you should implement this function to track the bubble's status in
+ * a different way, e.g. using window.localStorage in HTML5.
  */
 google.bookmarkbubble.Bubble.prototype.setHashParameter = google.abstractMethod;
 
